@@ -10,7 +10,7 @@ namespace albert {
         int column,
         int intValue)
         : type(type)
-        , lexeme(std::move(lexeme))
+        , lexeme(std::move(lexeme)) //No queremos una copia, solo transferir propiedad del recurso (más barato cuando tenemos lexemas masivos).
         , line(line)
         , column(column)
         , intValue(intValue) {
@@ -48,7 +48,7 @@ namespace albert {
         return "UNKNOWN";
     }
 
-    std::string toString(const Token& token) {
+    std::string toString(const Token& token) { //const, no queremos que se pueda modificar la referencia.
         std::ostringstream oss;
         oss << toString(token.type) << "('" << token.lexeme << "')";
         if (token.type == TokenType::NUMBER) {

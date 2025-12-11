@@ -6,9 +6,9 @@
 
 namespace albert {
 
-    struct Token {
+    struct Token { //Usamos un struct en lugar de una clase. Es un simple conjunto de datos. No necesitamos encapsular nada.
         TokenType type;
-        std::string lexeme;
+        std::string lexeme; //lexema: texto original
         int line = 0;
         int column = 0;
         int intValue = 0; // solo se usa si type == NUMBER

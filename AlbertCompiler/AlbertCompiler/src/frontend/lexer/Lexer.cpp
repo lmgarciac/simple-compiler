@@ -8,18 +8,18 @@ namespace albert {
         : m_source(std::move(source)) {
     }
 
-    std::vector<Token> Lexer::scanTokens() {
-        while (!isAtEnd()) {
-            m_start = m_current;
-            scanToken();
-        }
-
-        m_tokens.emplace_back(TokenType::END_OF_FILE, "", m_line, m_column);
-        return m_tokens;
+    bool Lexer::isAtEnd() const { //const garantiza que no podamos modificar miembros dentro del método.
+        return m_current >= m_source.size();
     }
 
-    bool Lexer::isAtEnd() const {
-        return m_current >= m_source.size();
+    std::vector<Token> Lexer::scanTokens() {
+        while (!isAtEnd()) {
+            m_start = m_current; //Cada vez que un token termina, m_current queda apuntando al inicio del siguiente
+            scanToken(); //Process un solo token completo
+        }
+
+        m_tokens.emplace_back(TokenType::END_OF_FILE, "", m_line, m_column); //Agrego end of file
+        return m_tokens;
     }
 
     char Lexer::advance() {
@@ -63,18 +63,18 @@ namespace albert {
     }
 
     void Lexer::scanToken() {
-        char c = advance();
+        char c = advance(); //devuelve el carácter actual y avanza m_current y m_column.
 
         switch (c) {
             // whitespace
         case ' ':
         case '\r':
         case '\t':
-            // se ignora
+            // se ignoran
             break;
 
         case '\n':
-            // advance() ya actualizó línea/columna, nada más que hacer
+            // advance() ya se encarga de actualizar línea/columna
             break;
 
             // punctuation
@@ -91,7 +91,7 @@ namespace albert {
         case '*': addToken(TokenType::STAR);        break;
         case '/':
             if (match('/')) {
-                // comentario de línea: consumir hasta fin de línea
+                // comentario de línea  ("//Comentario"): consumir hasta fin de línea
                 while (peek() != '\n' && !isAtEnd()) advance();
             }
             else {
@@ -106,7 +106,7 @@ namespace albert {
             if (match('=')) {
                 addToken(TokenType::BANG_EQUAL);
             }
-            // si quisieras soportar '!' solo, acá podrías agregarlo como token aparte
+            // si quisieramos soportar '!' solo, aca se podría agregar como token aparte
             break;
         case '<':
             addToken(match('=') ? TokenType::LESS_EQUAL : TokenType::LESS);
@@ -116,11 +116,11 @@ namespace albert {
             break;
 
         default:
-            if (std::isdigit(static_cast<unsigned char>(c))) {
-                number();
+            if (std::isdigit(static_cast<unsigned char>(c))) { //Necesito castear porque isdigit necesita unsigned char.
+                number(); //Si el primer caracter es número, sigo consumiendo todos los dígitos consecutivos.
             }
-            else if (isAlpha(c)) {
-                identifier();
+            else if (isAlpha(c)) { //Si es una letra o "_"
+                identifier(); //consumo todas las letras/dígitos/underscore consecutivos
             }
             else {
                 // por ahora, caracteres inválidos se ignoran.
@@ -131,15 +131,15 @@ namespace albert {
     }
 
     void Lexer::number() {
-        while (std::isdigit(static_cast<unsigned char>(peek()))) {
+        while (std::isdigit(static_cast<unsigned char>(peek()))) { // Me posiciono al final del número.
             advance();
         }
 
-        std::string text = m_source.substr(m_start, m_current - m_start);
+        std::string text = m_source.substr(m_start, m_current - m_start); //Extraigo el número.
 
         int value = 0;
-        for (char ch : text) {
-            value = value * 10 + (ch - '0');
+        for (char ch : text) { //sintaxis range-based for loop
+            value = value * 10 + (ch - '0'); // Convierto a número e itero en base 10
         }
 
         m_tokens.emplace_back(TokenType::NUMBER, std::move(text),
