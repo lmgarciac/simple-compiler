@@ -16,6 +16,6 @@ set(SRC_FILES
     src/frontend/lexer/Token.cpp
 )
 
-add_executable(albert ${SRC_FILES})
+add_executable(albert ${SRC_FILES} "src/frontend/parser/Parser.h" "src/frontend/parser/ast/Stmt.h" "src/frontend/parser/ast/Expr.h")
 
 target_include_directories(albert PRIVATE src)
